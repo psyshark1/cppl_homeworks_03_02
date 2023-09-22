@@ -4,15 +4,19 @@ class smart_array
 {
 public:
 	smart_array(const int& len);
+	smart_array(const smart_array& sa);
 	~smart_array();
 	void add_element(const int& number);
 	int get_element(const int& number);
-	smart_array& operator = (const smart_array& r);
+	void print();
+	smart_array& operator = (const smart_array& sa);
 private:
 	int* arr{ nullptr };
 	int arr_length{ 0 };
+	int arr_length_logic{ 0 };
 	void delete_arr();
 	void assign(const smart_array& t);
+	void expand_arr(const bool& oversize, const int& number);
 };
 
 int main(int argc, char** argv)
@@ -28,27 +32,59 @@ int main(int argc, char** argv)
 		new_array.add_element(34);
 
 		arr = new_array;
+		smart_array arr2(arr);
 	}
 	catch (const std::exception& ex) {
 		std::cout << ex.what() << std::endl;
+		std::system("pause");
 		return 1;
 	}
+	std::system("pause");
 	return 0;
 }
 
 smart_array::smart_array(const int& len)
 {
 	if (len < 1) { throw std::exception("Некорректный размер элемента массива!"); }
-	arr_length = len;
+	this->arr_length = len;
 	this->arr = new int[arr_length] {0};
+}
+
+smart_array::smart_array(const smart_array& sa)
+{
+	this->assign(sa);
 }
 
 void smart_array::add_element(const int& number)
 {
-	if (number < 1) { throw std::exception("Некорректный размер элемента массива!"); }
-	if (number <= arr_length) { throw std::exception("Такой элемент массива уже существует!"); }
-	delete_arr();
-	this->arr = new int[number] {0};
+	if (number < 1)
+	{
+		throw std::exception("Некорректный размер элемента массива!");
+	}
+
+	if (number > this->arr_length + 1)
+	{
+		this->expand_arr(true, number);
+	}
+
+	if (number <= this->arr_length_logic + 1) { ++this->arr_length_logic; }
+
+	if (this->arr_length_logic >= this->arr_length)
+	{
+		this->expand_arr(false, number);
+	}
+
+	if (number >= 1 && number <= this->arr_length_logic + 1)
+	{
+		for (int i = this->arr_length_logic; i > number - 1; --i)
+		{
+			this->arr[i] = this->arr[i - 1];
+		}
+	}
+	else if (number > this->arr_length_logic)
+	{
+		//this->arr[number] = value;
+	}
 }
 
 int smart_array::get_element(const int& number)
@@ -59,11 +95,25 @@ int smart_array::get_element(const int& number)
 
 void smart_array::delete_arr()
 {
-	if (arr != nullptr)
+	delete[] this->arr;
+	this->arr = nullptr;
+}
+
+void smart_array::expand_arr(const bool& oversize, const int& number)
+{
+	int* tmp{ nullptr };
+	int nsz{ 0 };
+
+	(oversize) ? nsz = number - 1 : nsz = this->arr_length * 2;
+
+	tmp = new int[nsz] { 0 };
+	for (int i = 0; i < this->arr_length; ++i)
 	{
-		delete[] this->arr;
-		this->arr = nullptr;
+		tmp[i] = this->arr[i];
 	}
+	delete_arr();
+	this->arr = tmp;
+	this->arr_length = nsz;
 }
 
 smart_array::~smart_array()
@@ -71,10 +121,22 @@ smart_array::~smart_array()
 	delete_arr();
 }
 
+void smart_array::print()
+{
+	for (int i = 0; i < this->arr_length; ++i)
+	{
+		std::cout << this->arr[i] << ' ';
+	}
+	std::cout << '\n';
+}
+
 smart_array& smart_array::operator = (const smart_array& r)
 {
-	this->delete_arr();
-	this->assign(r);
+	if (this != &r) {
+		this->delete_arr();
+		this->assign(r);
+		return *this;
+	}
 	return *this;
 }
 
@@ -82,7 +144,7 @@ void smart_array::assign(const smart_array& t)
 {
 	this->arr = new int[t.arr_length] {0};
 	this->arr_length = t.arr_length;
-	for (unsigned i = 0; i < this->arr_length; ++i)
+	for (int i = 0; i < this->arr_length; ++i)
 	{
 		this->arr[i] = t.arr[i];
 	}
