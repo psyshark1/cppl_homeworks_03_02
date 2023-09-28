@@ -27,6 +27,8 @@ int main(int argc, char** argv)
 		arr.add_element(4);
 		arr.add_element(155);
 
+		arr = arr;
+
 		smart_array new_array(2);
 		new_array.add_element(44);
 		new_array.add_element(34);
@@ -46,7 +48,7 @@ int main(int argc, char** argv)
 smart_array::smart_array(const int& len)
 {
 	if (len < 1) { throw std::exception("Некорректный размер элемента массива!"); }
-	this->arr_length = len;
+	this->arr_length = len - 1;
 	this->arr = new int[arr_length] {0};
 }
 
@@ -89,7 +91,7 @@ void smart_array::add_element(const int& number)
 
 int smart_array::get_element(const int& number)
 {
-	if (number < 1 || number > arr_length) { throw std::exception("Некорректный размер элемента массива!"); }
+	if (number < 0 || number > arr_length) { throw std::exception("Некорректный размер элемента массива!"); }
 	return arr[number];
 }
 
